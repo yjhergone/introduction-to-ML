@@ -1,0 +1,228 @@
+\documentclass[a4paper,UTF8]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{ctex}
+\usepackage{enumerate}
+\usepackage[margin=1.25in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage[noend]{algpseudocode} 
+ 
+\renewcommand{\algorithmicrequire}{\textbf{输入:}}  
+\renewcommand{\algorithmicensure}{\textbf{输出:}} 
+\theoremstyle{definition}
+\newtheorem*{solution}{Solution}
+\newtheorem*{prove}{Proof}
+\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+\usepackage{multirow}              
+
+\setlength{\evensidemargin}{.25in}
+\setlength{\textwidth}{6in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\topmargin}{-0.5in}
+% \setlength{\textheight}{9.5in}
+%%%%%%%%%%%%%%%%%%此处用于设置页眉页脚%%%%%%%%%%%%%%%%%%
+\usepackage{fancyhdr}                                
+\usepackage{lastpage}                                           
+\usepackage{layout}                                             
+\footskip = 12pt 
+\pagestyle{fancy}                    % 设置页眉                 
+\lhead{2020年春季}                    
+\chead{机器学习导论}                                                
+% \rhead{第\thepage/\pageref{LastPage}页} 
+\rhead{作业五}                                                                                               
+\cfoot{\thepage}                                                
+\renewcommand{\headrulewidth}{1pt}  			%页眉线宽，设为0可以去页眉线
+\setlength{\skip\footins}{0.5cm}    			%脚注与正文的距离           
+\renewcommand{\footrulewidth}{0pt}  			%页脚线宽，设为0可以去页脚线
+
+\makeatletter 									%设置双线页眉                                        
+\def\headrule{{\if@fancyplain\let\headrulewidth\plainheadrulewidth\fi%
+		\hrule\@height 1.0pt \@width\headwidth\vskip1pt	%上面线为1pt粗  
+		\hrule\@height 0.5pt\@width\headwidth  			%下面0.5pt粗            
+		\vskip-2\headrulewidth\vskip-1pt}      			%两条线的距离1pt        
+	\vspace{6mm}}     								%双线与下面正文之间的垂直间距              
+\makeatother  
+
+
+\begin{document}
+	\title{机器学习导论\\
+		习题五}
+	\author{181250177, 姚嘉和,181250177@smail.nju.edu.cn }
+	\maketitle
+	
+	
+	\section*{学术诚信}
+	
+	本课程非常重视学术诚信规范，助教老师和助教同学将不遗余力地维护作业中的学术诚信规范的建立。希望所有选课学生能够对此予以重视。\footnote{参考尹一通老师\href{http://tcs.nju.edu.cn/wiki/}{高级算法课程}中对学术诚信的说明。}
+	
+	\begin{tcolorbox}
+		\begin{enumerate}
+			\item[(1)] 允许同学之间的相互讨论，但是{\color{red}\textbf{署你名字的工作必须由你完成}}，不允许直接照搬任何已有的材料，必须独立完成作业的书写过程;
+			\item[(2)] 在完成作业过程中，对他人工作（出版物、互联网资料）中文本的直接照搬（包括原文的直接复制粘贴及语句的简单修改等）都将视为剽窃，剽窃者成绩将被取消。{\color{red}\textbf{对于完成作业中有关键作用的公开资料，应予以明显引用}}；
+			\item[(3)] 如果发现作业之间高度相似将被判定为互相抄袭行为，{\color{red}\textbf{抄袭和被抄袭双方的成绩都将被取消}}。因此请主动防止自己的作业被他人抄袭。
+		\end{enumerate}
+	\end{tcolorbox}
+	
+	\section*{作业提交注意事项}
+	\begin{tcolorbox}
+		\begin{enumerate}
+			\item[(1)] 请在\LaTeX模板中{\color{red}\textbf{第一页填写个人的姓名、学号、邮箱信息}}；
+			\item[(2)] 本次作业需提交该pdf文件，pdf文件名格式为{\color{red}\textbf{学号\_姓名.pdf}}，例如190000001\_张三.pdf，{\color{red}\textbf{需通过教学立方提交}}。
+			\item[(3)] 未按照要求提交作业，或提交作业格式不正确，将会{\color{red}\textbf{被扣除部分作业分数}}；
+			\item[(4)] 本次作业提交截止时间为{\color{red}\textbf{6月6日23:55:00。}}
+		\end{enumerate}
+	\end{tcolorbox}
+	
+	\newpage
+
+\section{[30pts] PCA}
+$\boldsymbol{x} \in \mathbb{R}^{D}$是一个随机向量，其均值和协方差分别是$\boldsymbol{\mu}_{\boldsymbol{x}}=\mathbb{E}(\boldsymbol{x}) \in \mathbb{R}^{D}$，$\Sigma_{x}=\mathbb{E}(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top} \in \mathbb{R}^{D \times D}$。定义随机变量$y_{i}=\boldsymbol{u}_{i}^{\top} \boldsymbol{x}+a_{i} \in \mathbb{R}, i=1, \ldots, d \leq D$为$\boldsymbol{x}$的主成分，其中$\boldsymbol{u}_{i} \in \mathbb{R}^{D}$是单位向量($\boldsymbol{u}_i \top \boldsymbol{u}_i = 1$)，$a_{i} \in \mathbb{R}$，$\left\{y_{i}\right\}_{i=1}^{n}$是互不相关的零均值随机变量，它们的方差满足$\operatorname{Var}\left(y_{1}\right) \geq \operatorname{Var}\left(y_{2}\right) \geq \cdots \geq \operatorname{Var}\left(y_{d}\right)$。假设$\Sigma_{x}$没有重复的特征值，请证明：
+\begin{enumerate}
+	\item \textbf{[5pts]} $a_{i}=-\boldsymbol{u}_{i}^{\top} \boldsymbol{\mu}_{\boldsymbol{x}}, i=1, \ldots, d$。
+	\item \textbf{[10pts]} $\boldsymbol{u}_{1}$是$\Sigma_{x}$最大的特征值对应的特征向量。
+	
+	提示：写出要最大化的目标函数，写出约束条件，使用拉格朗日乘子法。
+	
+	\item \textbf{[15pts]} $\boldsymbol{u}_{2}^{\top} \boldsymbol{u}_{1}=0$，且$\boldsymbol{u}_{2}$是$\Sigma_{x}$第二大特征值对应的特征向量。
+	
+	提示：由$\left\{y_{i}\right\}_{i=1}^{n}$是互不相关的零均值随机变量可推出$\boldsymbol{u}_{2}^{\top} \boldsymbol{u}_{1}=0$。$\boldsymbol{u}_{2}^{\top} \boldsymbol{u}_{1}=0$ 可作为第二小问的约束条件之一。
+	
+\end{enumerate}
+
+\begin{solution}
+	(1)$\left\{y_{i}\right\}_{i=1}^{n}$是互不相关的零均值随机变量,所以$\forall i$,有$E(y_i)=\boldsymbol{u}_{i}^{\top} E(\boldsymbol{x})+a_{i}=0$,所以有$a_{i}=-\boldsymbol{u}_{i}^{\top} E(\boldsymbol{x})=-\boldsymbol{u}_{i}^{\top}\boldsymbol{\mu}_{\boldsymbol{x}}$
+
+
+	\
+
+	本质上(2)，(3)的做法是说明$y_1,y_2$是两个优化问题的最优解，然后利用限制和原函数利用拉格朗日方法推出要想成为最优解的必要条件，而$y_1,y_2$是最优解，所以必定要满足这些必要条件。
+
+	(2)因为$E(y_i)=0$,所以$D(y_i)=Var(y_i)=E(y_i^2)={\boldsymbol{u}_i}^TE((\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top}){\boldsymbol{u}_i}={\boldsymbol{u}_i}^T\Sigma_{x}{\boldsymbol{u}_i}$
+
+	考虑$z={\boldsymbol{w}}^T(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top}{\boldsymbol{w}}$
+
+	$\max_{\boldsymbol{w}} \boldsymbol{w}^t\Sigma_{x}\boldsymbol{w} $  
+
+	s.t. $\boldsymbol{w}^t\boldsymbol{w}=1$，
+
+	$y_1$就是满足该式的$z$的一个解,所以$u_1$有最值下的$w$有的性质（因为满足该式可以理解为是选择$u_1$的一个必要条件） 利用拉格朗日乘子法，有$\Sigma_{x}\boldsymbol{w}=\lambda \boldsymbol{w}$说明若要取到方差最大值，必然要$\boldsymbol{u}_1$是$\Sigma_{x}$的特征向量，所以$Var(z)={\boldsymbol{w}}^T\Sigma_{x}{\boldsymbol{w}}=\lambda$($\lambda$为$\boldsymbol{w}$对应的特征值) 又因为$Var(y_1)$是最大的方差，$\boldsymbol{u}_1$对应的是最大的特征值。
+
+	(3)利用$y_1$,$y_2$不相关有$Cov(y_2,y_1)=E(\boldsymbol{u}_2^{\top}(\boldsymbol{x}-\boldsymbol{mu})(\boldsymbol{x}-\boldsymbol{mu})^{\top}\boldsymbol{u}_1=\boldsymbol{u}_2^{\top}\Sigma_{x}\boldsymbol{u_1}=Var(y_1)\boldsymbol{u}_2^{\top}\boldsymbol{u}_1=0$
+
+	按照主成分方差$y_2$定义方式，考虑$z={\boldsymbol{w}}^T(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top}{\boldsymbol{w}}$
+
+	$\max_{\boldsymbol{w}} \boldsymbol{w}^t\Sigma_{x}\boldsymbol{w} $  
+
+	s.t. $\boldsymbol{w}^t\boldsymbol{w}=1$,$\boldsymbol{w}^t \boldsymbol{u}_1=0$
+
+	$y_2$就是满足该式的$z$的一个解,所以$u_1$有最值下的$w$有的性质（因为满足该式可以理解为是选择$u_1$的一个必要条件) 利用拉格朗日乘子法有$\Sigma_{x}\boldsymbol{w}=\lambda \boldsymbol{w}+\theta \boldsymbol{u}_1$
+
+	我们先对等式两边左乘上$\boldsymbol{w}^{\top}$有，$\boldsymbol{w}^{\top}\Sigma_{x}\boldsymbol{w}=\lambda$ 
+
+
+	再对等式两边左乘上$\boldsymbol{u}_1^{\top}$，有$\boldsymbol{u}_1^{\top}\Sigma_{x}\boldsymbol{w}=\boldsymbol{u}_1^{\top}\Sigma_{x}(\boldsymbol{u}_1\boldsymbol{u}_1^{\top})\boldsymbol{w}=Var(y_1)\boldsymbol{u}_1^{\top}\boldsymbol{w}=0=0+\theta\boldsymbol{u}_1$
+
+	所以$\theta=0$,说明若要取到限制条件下的方差最大值，必然要$\boldsymbol{u}_2$是$\Sigma_{x}$的特征向量 所以$Var(z)={\boldsymbol{w}}^T\Sigma_{x}{\boldsymbol{w}}=\lambda$($\lambda$为$\boldsymbol{w}$对应的特征值) 又因为$Var(y_2)$是次大的方差，$\boldsymbol{u}_2$对应的是次大的特征值。
+
+\end{solution}
+
+\section{[30pts] Clustering}
+考虑$p$维特征空间里的混合模型
+$$
+g(x)=\sum_{k=1}^{K} \pi_{k} g_{k}(x)
+$$
+其中$g_{k}=N\left(\mu_{k}, \mathbf{I} \cdot \sigma^{2}\right)$，$\mathbf{I}$是单位矩阵，
+$\pi_{k} > 0$，$\sum_{k} \pi_{k}=1$。
+$\left\{\mu_{k}, \pi_{k}\right\}, k=1,\ldots,K$和$\sigma^2$是未知参数。
+
+设有数据$x_{1}, x_{2}, \ldots, x_{N} \sim g(x)$,
+\begin{enumerate}
+	\item \textbf{[10pts]} 请写出数据的对数似然。
+	\item \textbf{[15pts]} 请写出求解极大似然估计的EM算法。
+	\item \textbf{[5pts]} 请简要说明如果$\sigma$的值已知，并且$\sigma \rightarrow 0$，那么该EM算法就相当于K-means聚类。
+\end{enumerate}
+
+\begin{solution}
+	(1)$LL(\boldsymbol{x})=\sum_{i=1}^N \log(g(x_i))=\sum_{i=1}^N \log(\sum_{k=1}^K \pi_{k} g_{k}(x_i))=\sum_{i=1}^N \log(\sum_{k=1}^K \pi_{k} \frac{1}{(|2\pi\sigma^2 I|^{0.5})} \exp(-\frac{1}{2}(x-\mu_{k})^T(I \cdot \sigma^{-2})(x-\mu_{k}))$
+
+	(2)定义随机变量$z_j$表示生成样本$x_j$的高斯混合成分,$\gamma_{ji}=p(z_j=i|x_j)=\frac{\pi_i p(x_j|\mu_i,\sigma^2)}{\sum_{l=1}^k \pi_l p(x_j|\mu_l,\sigma^2)}$
+
+	若参数$(\pi_i,\mu_i,\sigma^2)$使数据对数似然最大，则有$\frac{\partial{LL}}{\partial \mu_i}=0$,则有$\mathbf{\mu_i}=\frac{\sum_{j=1}^N \gamma_{ji}x_j}{\sum_{j=1}^N{\gamma_{ji}}}$
+
+	则有$\frac{\partial{LL}}{\partial \sigma^2}=0$ 则有$\sigma^2=\frac{1}{pK}\frac{\sum_{i=1}^K\sum_{j=1}^N\gamma_{ji}(x_j-\mu_i)^{\top}(x_j-\mu_i)}{\sum_{j=1}^N \gamma_{ji}}$
+
+	对于混合系数，除了要最大化$LL$,还要满足$0 \leq \pi_i,\sum_{i=1}^k \pi_i=1$,则其拉格朗日形式为$LL+\lambda(\sum_{i=1}^k \pi_i-1)$,有$\pi_i=\frac{1}{N}\sum_{j=1}^N \gamma_{ji}$
+
+	然后EM算法就是随机初始化参数$(\pi_i,\mu_i,\sigma^2)$，然后计算出$\gamma_{ji}$,再用$\gamma_{ji}$利用上面三个式子更新出新的参数$(\pi_i,\mu_i,\sigma^2)$然后算出新的$\gamma_{ji}$,如此反复更新至收敛即可。
+
+	\begin{algorithm}[H]
+	\caption{$EM$}
+	\begin{algorithmic}[1]
+	\Require 样本集$D=\{\mathbf{x_1},\mathbf{x_2},...,\mathbf{x_m}\}$;
+
+				高斯混合成分个数$k$
+	\State 初始化高斯混合分布的模型参数$\{(\pi_i,\mathbf{\mu_i},\sigma^2)|1\leq i \leq k\}$
+	\Repeat
+		\For{$j=1,2,...,N$}
+
+			\State $\gamma_{ji}=p(z_j=i|x_j)=\frac{\pi_i p(x_j|\mu_i,\sigma^2)}{\sum_{l=1}^k \pi_l p(x_j|\mu_l,\sigma^2)}(1\leq i \leq k)$
+		\EndFor
+		\For{$i=1,2,...,k$}
+
+			\State 计算新均值向量：$\mathbf{\mu_i}'=\frac{\sum_{j=1}^N \gamma_{ji}x_j}{\sum_{j=1}^N{\gamma_{ji}}}$
+
+			
+			\State 计算新混合系数：$\pi_i'=\frac{1}{N}\sum_{j=1}^N \gamma_{ji}$
+
+		\EndFor
+
+		\State 计算新方差：${\sigma^2}'=\frac{1}{pK}\frac{\sum_{i=1}^K\sum_{j=1}^N\gamma_{ji}(x_j-\mathbf{\mu_i}')^{\top}(x_j-\mathbf{\mu_i}')}{\sum_{j=1}^N \gamma_{ji}}$
+
+		\State 将模型参数$\{(\pi_i,\mathbf{\mu_i},\sigma^2)|1\leq i \leq k\}$更新为$\{(\pi_i’,\mathbf{\mu_i}',{\sigma^2}')|1\leq i \leq k\}$
+
+
+	\Until 满足停止条件
+
+	\Ensure 模型参数$\{(\pi_i,\mathbf{\mu_i},\sigma^2)|1\leq i \leq k\}$
+
+	\end{algorithmic}
+	\end{algorithm}  
+
+
+	(3)若$\sigma$是已知的，那么这些高斯分布上距离均值的距离就会以一种指数下降的趋势反映在概率上，这时候$\gamma_{ji}$就会有表示第$i$个点是否距离$j$这个类的均值最近的效果，毕竟线性平均面对指数下降，最大值就会变成1，其他几乎都是0，$\pi_i$就是反应了第$i$个类的数量占比，而$\mu_i$的计算就是变成计算第$i$个类的均值
+
+
+\end{solution}
+
+\section{[40pts] Ensemble Methods}
+\begin{enumerate}[(1)]
+	\item \textbf{[10pts]} GradientBoosting\cite{friedman2001greedy} 是一种常用的 Boosting 算法，请简要分析其与 AdaBoost 的异同。
+	\item \textbf{[10pts]} 请简要说明随机森林为何比决策树 Bagging 集成的训练速度更快。 
+	\item \textbf{[20pts]} Bagging 产生的每棵树是同分布的，那么 $B$ 棵树均值的期望和其中任一棵树的期望是相同的。
+	因此，Bagging 产生的偏差和其中任一棵树的偏差相同，Bagging 带来的性能提升来自于方差的降低。
+	
+	我们知道，方差为 $\sigma^2$ 的 $B$ 个独立同分布的随机变量，其均值的方差为 $\frac{1}{B}\sigma^2$。如果这些随机变量是同分布的，但不是独立的，设两两之间的相关系数 $\rho>0$，请推导均值的方差为 $\rho \sigma^{2}+\frac{1-\rho}{B} \sigma^{2}$。
+\end{enumerate}
+
+\begin{solution}
+
+   (1)和AdaBoost一样，Gradient Boosting也是重复选择一个模型并且每次基于先前模型的表现对数据进行调整，然后重新训练模型。不同的是，AdaBoost是通过提升错误分类数据点的权重来改善模型的不足而Gradient Boosting是通过算损失函数的梯度来定位模型的不足。因此相比AdaBoost, Gradient Boosting可以使用更多种类的目标函数（AdaBoost就是基于最小化指数损失函数，不能随意更改）
+
+	(2)一般决策树的生成过程中，最花时间的就是搜寻最优的切分属性；随机森林在决策树训练过程中引入了随机属性选择，这种属性扰动，大大减少了此过程的计算量，故能够打打提升性能
+	
+	(3)设$X_1$,...$X_B$是满足题目要求的$B$随机变量，则$D(\frac{\sum_{i=1}^B X_i}{B})=\frac{1}{B^2}D(\sum_{i=1}^B X_i)=\frac{1}{B^2}(D(X_1)+D(\sum_{i=2}^B X_i)+2Cov(X_1,\sum_{i=2}^B X_i)=\frac{1}{B^2}(\sigma^2+D(\sum_{i=2}^B X_i)+2\sum_{i=2}^B Cov(X_1,X_i))=\frac{1}{B^2}(\sigma^2+D(\sum_{i=2}^B X_i)+2\rho \sigma^2)$,可以写成递推形式$f(B)=f(B-1)+\sigma^2((2B-2)\rho+1)$,$f(B)=B\sigma^2+\sigma^2(B-1)B\rho$
+
+	$D(\frac{\sum_{i=1}^B X_i}{B})=\frac{f(B)}{B^2}=(\frac{1}{B}+\rho-\frac{1}{B}\rho)\sigma^2$
+\end{solution}
+
+\bibliographystyle{apalike}
+\bibliography{bib}
+
+\end{document}
